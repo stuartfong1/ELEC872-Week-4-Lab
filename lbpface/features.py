@@ -129,13 +129,14 @@ class LBPDescriptor:
     def label_image(self, image: np.ndarray) -> np.ndarray:
         return lbp_u2(image, self.P, self.R, self.border)
 
-    def transform_one(self, image: np.ndarray) -> np.ndarray:
-        # image = sca_lbp(image)  # Stuart's Crazy Awesome LBP (SCA-LBP)
+    def transform_one(self, image: np.ndarray, do_improvement=False) -> np.ndarray:
+        if do_improvement:
+            image = sca_lbp(image)  # Stuart's Crazy Awesome LBP (SCA-LBP)
         return spatial_histogram(self.label_image(image), self.n_bins, self.grid, self.window, self.anchor)
 
-    def transform(self, images: Iterable[np.ndarray]) -> np.ndarray:
+    def transform(self, images: Iterable[np.ndarray], do_improvement=False) -> np.ndarray:
         """Stack of descriptors, shape ``(n_images, feature_length)``."""
-        feats = [self.transform_one(im) for im in images]
+        feats = [self.transform_one(im, do_improvement=do_improvement) for im in images]
         if not feats:
             raise ValueError("no images")
         return np.stack(feats, axis=0)

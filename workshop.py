@@ -6,15 +6,23 @@ from lbpface.datasets import load_orl
 from lbpface.distances import pairwise_distances
 from lbpface.features import LBPDescriptor
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--improvement", action="store_true")
+
+args = parser.parse_args()
+do_improvement = args.improvement
+
 fs = load_orl("data/ORL")
 desc = LBPDescriptor.orl()  # LBP(16,2), 30x37 windows
 is_gallery = (np.arange(len(fs.images)) % 10) < 5   # images 1-5 of each subject
 gal, prb = fs.images[is_gallery], fs.images[~is_gallery]
 gl, pl = fs.subjects[is_gallery], fs.subjects[~is_gallery]
-G = desc.transform(gal)
+G = desc.transform(gal, do_improvement=do_improvement)
 
 def score(probe_images):
-    P = desc.transform(probe_images)
+    P = desc.transform(probe_images, do_improvement=do_improvement)
     return recognition_rate(pairwise_distances(P, G, "chi2"), gl, pl)
 
 def illum_ramp(img, s):          # darker on the left, brighter on the right
